@@ -97,5 +97,11 @@ public class CRUDTests {
 			Assert.assertEquals(departureLinesToMatch[arrayIndex++], someLine);
 		buffReader.close();
 	}
+	
+	@Test
+	public void readArrivalsFromFile() {
+		
+		
+	}
 
 }

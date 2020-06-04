@@ -227,7 +227,7 @@ public class FlightManager {
 			createFlight(flight);
 	}
 
-	public void readFlights(Scanner scan, ArrayList<Flight> flights, File dataFile) {
+	public ArrayList<? extends Flight> readFlights(Scanner scan, ArrayList<Flight> flights, File dataFile) {
 		ArrayList<? extends Flight> retFlights = flights;
 		String submenuChoice;
 		String desiredValue = null;
@@ -284,6 +284,8 @@ public class FlightManager {
 		for (Flight flight : retFlights) {
 			System.out.print(flight.toString());
 		}
+		
+		return retFlights;
 	}
 
 	public boolean deleteFlights(Scanner scan, ArrayList<Flight> flights, File dataFile, BufferedWriter buffWriter)
