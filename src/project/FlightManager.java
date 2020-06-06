@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class FlightManager {
@@ -18,10 +19,6 @@ public class FlightManager {
 	final static String FNAME_ARRIVALS = "arrivals.txt";
 	final static String FNAME_DEPARTURES = "departures.txt";
 	final static DateTimeFormatter formatt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-	private ArrayList<Flight> arrivalFlights;
-	private ArrayList<Flight> departureFlights;
-	private File arrivalsFile;
-	private File departuresFile;
 
 	private static String city;
 	private static String company;
@@ -29,15 +26,29 @@ public class FlightManager {
 	private static int[] tokens;
 	private static int terminalNum;
 
+	private ArrayList<Flight> arrivalFlights;
+	private ArrayList<Flight> departureFlights;
+	private File arrivalsFile;
+	private File departuresFile;
+
 	public static void main(String[] args) {
 		FlightManager manager = new FlightManager();
-		Scanner scan = new Scanner(System.in);
+		Scanner scan;
+		if (args.length != 0)
+			scan = new Scanner(Arrays.toString(args));
+		else
+			scan = new Scanner(System.in);
+
 		try {
 			manager.arrivalDepartureMenuHandler(scan);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		scan.close();
+	}
+
+	public static String formatInputFromArgs(String str) {
+		return str.trim().replace("[", "").replace(",", "").replace("]", "");
 	}
 
 	public FlightManager() {
@@ -47,7 +58,6 @@ public class FlightManager {
 		departureFlights = new ArrayList<Flight>();
 		if (arrivalsFile.canExecute()) {
 			try {
-				// printFileStatus(arrivalsFile);
 				initDataFromFile(arrivalFlights, arrivalsFile);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -56,7 +66,6 @@ public class FlightManager {
 
 		if (departuresFile.canExecute()) {
 			try {
-				// printFileStatus(departuresFile);
 				initDataFromFile(departureFlights, departuresFile);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -98,13 +107,13 @@ public class FlightManager {
 	public int printArrivalDepartureMenuAndScanChoice(Scanner scan) {
 		System.out.print(
 				"\nFlight Type (Choose option):\n1. Arriving Flights\n2. Departing flights\n3. Exit\n\nyour choice: ");
-		return Integer.parseInt(scan.nextLine());
+		return Integer.parseInt(formatInputFromArgs(scan.next()));
 	}
 
 	public int printCrudMenuAndScanChoice(Scanner scan) {
 		System.out.print(
 				"\nFlights Menu (Choose option):\n1. Insert flight\n2. Read flights\n3. Delete flights\n4. Back\n\nyour choice: ");
-		return Integer.parseInt(scan.nextLine());
+		return Integer.parseInt(formatInputFromArgs(scan.next()));
 	}
 
 	public void arrivalDepartureMenuHandler(Scanner scan) throws IOException {
@@ -229,54 +238,38 @@ public class FlightManager {
 
 	public ArrayList<? extends Flight> readFlights(Scanner scan, ArrayList<Flight> flights, File dataFile) {
 		ArrayList<? extends Flight> retFlights = flights;
-		String submenuChoice;
 		String desiredValue = null;
-		System.out.print("Show flights that match some distinct field value? (y/n): ");
-		char answer = scan.nextLine().charAt(0);
-		if (answer == 'y' || answer == 'Y') {
+		String submenuChoice = "";
+
+		while (!submenuChoice.equals("cont")) {
 			if (!flights.isEmpty() & flights.get(0) instanceof ArrivalFlight)
-				System.out.print("Choose a distinct field (origin/datetime/company/code/terminal): ");
-			else if (!flights.isEmpty() & flights.get(0) instanceof DepartureFlight)
-				System.out.print("Choose a distinct field (destination/datetime/company/code/terminal): ");
+				System.out.print(
+						"Choose a distinct field (origin/datetime/company/code/terminal) or enter \"cont\" to continue: ");
+			else
+				System.out.print(
+						"Choose a distinct field (destination/datetime/company/code/terminal) or enter \"cont\" to continue: ");
 
-			submenuChoice = scan.nextLine();
-			if (!submenuChoice.equals("datetime")) {
-				System.out.print("Enter the desired value: ");
-				desiredValue = scan.nextLine();
-			}
-			retFlights = viewFlightsWith(scan, submenuChoice, desiredValue, retFlights);
-
-			System.out.print("Choose another distinct field? (y/n): ");
-			answer = scan.nextLine().charAt(0);
-			while (answer == 'y' || answer == 'Y') {
-				if (!flights.isEmpty() & flights.get(0) instanceof ArrivalFlight)
-					System.out.print("Choose a distinct field (origin/datetime/company/code/terminal): ");
-				else if (!flights.isEmpty() & flights.get(0) instanceof DepartureFlight)
-					System.out.print("Choose a distinct field (destination/datetime/company/code/terminal): ");
-				submenuChoice = scan.nextLine();
+			submenuChoice = formatInputFromArgs(scan.next());
+			if (!submenuChoice.equals("cont")) {
 				if (!submenuChoice.equals("datetime")) {
-					System.out.print("Enter the desired value :");
-					desiredValue = scan.nextLine();
+					System.out.print("Enter the desired value: ");
+					desiredValue = formatInputFromArgs(scan.next());
 				}
 				retFlights = viewFlightsWith(scan, submenuChoice, desiredValue, retFlights);
-				System.out.print("Choose another distinct field? (y/n): ");
-				answer = scan.nextLine().charAt(0);
 			}
 		}
 
-		System.out.print("Do you want to sort by some criteria? (y/n): ");
-		answer = scan.nextLine().charAt(0);
-		if (answer == 'y' || answer == 'Y') {
-			if (dataFile.getName().equals(FNAME_ARRIVALS))
-				System.out.print(
-						"By which field would you like to sort the flight list? (origin/departure/arrival/company/code/terminal): ");
-			else if (dataFile.getName().equals(FNAME_DEPARTURES))
-				System.out.print(
-						"By which field would you like to sort the flight list? (destination/departure/arrival/company/code/terminal): ");
-
-			submenuChoice = scan.nextLine();
+		if (dataFile.getName().equals(FNAME_ARRIVALS))
+			System.out.print(
+					"would you like to sort the flight list? (origin/departure/arrival/company/code/terminal) or enter \"cont\" to continue: ");
+		else if (dataFile.getName().equals(FNAME_DEPARTURES))
+			System.out.print(
+					"would you like to sort the flight list? (destination/departure/arrival/company/code/terminal) or enter \"cont\" to continue: ");
+		submenuChoice = formatInputFromArgs(scan.next());
+		if (!submenuChoice.equals("cont")) {
 			System.out.print("Reversed order? (true/false): ");
-			retFlights = sortFlightsBy(submenuChoice, Boolean.parseBoolean(scan.nextLine()), retFlights);
+			retFlights = sortFlightsBy(submenuChoice, Boolean.parseBoolean(formatInputFromArgs(scan.next())),
+					retFlights);
 		}
 
 		System.out.println(
@@ -284,9 +277,62 @@ public class FlightManager {
 		for (Flight flight : retFlights) {
 			System.out.print(flight.toString());
 		}
-		
+
 		return retFlights;
 	}
+
+	/*
+	 * public ArrayList<? extends Flight> readFlights(Scanner scan,
+	 * ArrayList<Flight> flights, File dataFile) { ArrayList<? extends Flight>
+	 * retFlights = flights; String submenuChoice; String desiredValue = null;
+	 * System.out.print("Show flights that match some distinct field value? (y/n): "
+	 * ); char answer = scan.nextLine().charAt(0); if (answer == 'y' || answer ==
+	 * 'Y') { if (!flights.isEmpty() & flights.get(0) instanceof ArrivalFlight)
+	 * System.out.
+	 * print("Choose a distinct field (origin/datetime/company/code/terminal): ");
+	 * else if (!flights.isEmpty() & flights.get(0) instanceof DepartureFlight)
+	 * System.out.
+	 * print("Choose a distinct field (destination/datetime/company/code/terminal): "
+	 * );
+	 * 
+	 * submenuChoice = scan.nextLine(); if (!submenuChoice.equals("datetime")) {
+	 * System.out.print("Enter the desired value: "); desiredValue =
+	 * scan.nextLine(); } retFlights = viewFlightsWith(scan, submenuChoice,
+	 * desiredValue, retFlights);
+	 * 
+	 * System.out.print("Choose another distinct field? (y/n): "); answer =
+	 * scan.nextLine().charAt(0); while (answer == 'y' || answer == 'Y') { if
+	 * (!flights.isEmpty() & flights.get(0) instanceof ArrivalFlight) System.out.
+	 * print("Choose a distinct field (origin/datetime/company/code/terminal): ");
+	 * else if (!flights.isEmpty() & flights.get(0) instanceof DepartureFlight)
+	 * System.out.
+	 * print("Choose a distinct field (destination/datetime/company/code/terminal): "
+	 * ); submenuChoice = scan.nextLine(); if (!submenuChoice.equals("datetime")) {
+	 * System.out.print("Enter the desired value :"); desiredValue =
+	 * scan.nextLine(); } retFlights = viewFlightsWith(scan, submenuChoice,
+	 * desiredValue, retFlights);
+	 * System.out.print("Choose another distinct field? (y/n): "); answer =
+	 * scan.nextLine().charAt(0); } }
+	 * 
+	 * System.out.print("Do you want to sort by some criteria? (y/n): "); answer =
+	 * scan.nextLine().charAt(0); if (answer == 'y' || answer == 'Y') { if
+	 * (dataFile.getName().equals(FNAME_ARRIVALS)) System.out.print(
+	 * "By which field would you like to sort the flight list? (origin/departure/arrival/company/code/terminal): "
+	 * ); else if (dataFile.getName().equals(FNAME_DEPARTURES)) System.out.print(
+	 * "By which field would you like to sort the flight list? (destination/departure/arrival/company/code/terminal): "
+	 * );
+	 * 
+	 * submenuChoice = scan.nextLine();
+	 * System.out.print("Reversed order? (true/false): "); retFlights =
+	 * sortFlightsBy(submenuChoice, Boolean.parseBoolean(scan.nextLine()),
+	 * retFlights); }
+	 * 
+	 * System.out.println(
+	 * "\nThese are the flights that match the description:\n================================================="
+	 * ); for (Flight flight : retFlights) { System.out.print(flight.toString()); }
+	 * 
+	 * return retFlights; }
+	 */
 
 	public boolean deleteFlights(Scanner scan, ArrayList<Flight> flights, File dataFile, BufferedWriter buffWriter)
 			throws IOException {
