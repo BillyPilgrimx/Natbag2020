@@ -1,11 +1,18 @@
 package tests;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Scanner;
 
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeAll;
@@ -18,6 +25,8 @@ import project.FlightManager;
 public class CRUDTests {
 
 	// flight manager
+	private final static String FNAME_ARRIVALS = "arrivals.txt";
+	private final static String FNAME_DEPARTURES = "departures.txt";
 	private FlightManager fm = new FlightManager();
 	private static ArrayList<ArrivalFlight> arrivalFlights;
 	private static ArrayList<DepartureFlight> departureFlights;
@@ -25,19 +34,22 @@ public class CRUDTests {
 	private String someLine;
 	int arrayIndex;
 
-	private String[] arrivalLinesToMatch = {
+	private String[] arrivalLinesToMatchArray = {
 			"ArrivalFlight [origin=New York, departureDT=2020-10-10T08:00, arrivalDT=2020-10-10T17:00, company=Delta, code=XG4, terminalNum=2]",
 			"ArrivalFlight [origin=Paris, departureDT=2020-08-03T17:00, arrivalDT=2020-08-03T22:00, company=Pegasus, code=AG2, terminalNum=1]",
 			"ArrivalFlight [origin=London, departureDT=2020-09-15T12:00, arrivalDT=2020-09-15T18:30, company=Swiss, code=JK7, terminalNum=2]",
 			"ArrivalFlight [origin=Rome, departureDT=2020-09-06T14:30, arrivalDT=2020-09-06T18:00, company=Lufthanssa, code=BK4, terminalNum=3]",
 			"ArrivalFlight [origin=Istanbul, departureDT=2020-10-02T21:00, arrivalDT=2020-10-02T23:00, company=KLM, code=ZF3, terminalNum=1]" };
 
-	private String[] departureLinesToMatch = {
+	private String[] departureLinesToMatchArray = {
 			"DepartureFlight [destination=Los Angeles, departureDT=2020-11-07T06:30, arrivalDT=2020-11-07T19:30, company=Pacific, code=MR8, terminalNum=2]",
 			"DepartureFlight [destination=Madrid, departureDT=2020-09-12T10:30, arrivalDT=2020-09-12T15:00, company=Pegasus, code=NU6, terminalNum=4]",
 			"DepartureFlight [destination=Berlin, departureDT=2020-08-04T11:30, arrivalDT=2020-08-04T15:45, company=Swiss, code=SX6, terminalNum=1]",
 			"DepartureFlight [destination=Moscow, departureDT=2020-12-10T09:30, arrivalDT=2020-12-10T14:30, company=Aeroflot, code=AA7, terminalNum=3]",
 			"DepartureFlight [destination=Eilat, departureDT=2020-08-25T07:30, arrivalDT=2020-08-25T08:15, company=El Al, code=IP3, terminalNum=3]" };
+
+	private List<String> arrivalLinesToMatchArrayList = Arrays.asList(arrivalLinesToMatchArray);
+	private List<String> departureLinesToMatchArrayList = Arrays.asList(departureLinesToMatchArray);
 
 	@BeforeAll
 	public static void initClass() {
@@ -83,8 +95,8 @@ public class CRUDTests {
 		fm.createFlights(arrivalFlights);
 		buffReader = new BufferedReader(new FileReader(fm.getArrivalsFile()));
 		arrayIndex = 0;
-		while ((someLine = buffReader.readLine()) != null && arrayIndex < arrivalLinesToMatch.length)
-			Assert.assertEquals(arrivalLinesToMatch[arrayIndex++], someLine);
+		while ((someLine = buffReader.readLine()) != null && arrayIndex < arrivalLinesToMatchArray.length)
+			Assert.assertEquals(arrivalLinesToMatchArray[arrayIndex++], someLine);
 		buffReader.close();
 	}
 
@@ -93,15 +105,45 @@ public class CRUDTests {
 		fm.createFlights(departureFlights);
 		buffReader = new BufferedReader(new FileReader(fm.getDeparturesFile()));
 		arrayIndex = 0;
-		while ((someLine = buffReader.readLine()) != null && arrayIndex < arrivalLinesToMatch.length)
-			Assert.assertEquals(departureLinesToMatch[arrayIndex++], someLine);
+		while ((someLine = buffReader.readLine()) != null && arrayIndex < arrivalLinesToMatchArray.length)
+			Assert.assertEquals(departureLinesToMatchArray[arrayIndex++], someLine);
 		buffReader.close();
 	}
-	
+
 	@Test
 	public void readArrivalsFromFile() {
 		
+		for(String str : arrivalLinesToMatchArrayList)
+			System.out.println(str);
 		
+		int i = 0;
+		Scanner scan;
+		try {
+			scan = new Scanner(new File(FNAME_ARRIVALS));
+			while (scan.hasNext())
+				Assert.assertEquals(arrivalLinesToMatchArrayList.get(i++), scan.nextLine());
+			scan.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void readDeparturesFromFile() {
+		
+		for(String str : departureLinesToMatchArrayList)
+			System.out.println(str);
+		
+		int i = 0;
+		Scanner scan;
+		try {
+			scan = new Scanner(new File(FNAME_DEPARTURES));
+			while (scan.hasNext())
+				assertEquals(departureLinesToMatchArrayList.get(i++), scan.nextLine());
+			scan.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

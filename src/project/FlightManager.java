@@ -38,7 +38,7 @@ public class FlightManager {
 			scan = new Scanner(Arrays.toString(args));
 		else
 			scan = new Scanner(System.in);
-
+		
 		try {
 			manager.arrivalDepartureMenuHandler(scan);
 		} catch (IOException e) {
@@ -236,7 +236,7 @@ public class FlightManager {
 			createFlight(flight);
 	}
 
-	public ArrayList<? extends Flight> readFlights(Scanner scan, ArrayList<Flight> flights, File dataFile) {
+	public ArrayList<? extends Flight> readFlights(Scanner scan, ArrayList<? extends Flight> flights, File dataFile) {
 		ArrayList<? extends Flight> retFlights = flights;
 		String desiredValue = null;
 		String submenuChoice = "";
